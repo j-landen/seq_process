@@ -68,18 +68,31 @@ def calculate_fps(timestamps_file):
     with open(timestamps_file, 'r') as infile:
         timestamps = infile.readlines()
 
-    # Convert timestamps to datetime objects
-    datetime_format = "%Y:%m:%d %H:%M:%S.%f"
-    datetimes = [
-        datetime.strptime(timestamp.strip().split('+')[0].split('-')[0], datetime_format)
-        for timestamp in timestamps
-    ]
+    times = []
+    # Process each timestamp line to extract only the time portion.
+    for timestamp in timestamps:
+        # Remove any extra parts (e.g., timezone or additional metadata)
+        # Assumes the time is after the first whitespace (if date is present)
+        parts = timestamp.strip().split('+')[0].split('-')[0].split()
+        # If there are both date and time, the time should be the second element.
+        # Otherwise, use the available element.
+        time_str = parts[1] if len(parts) > 1 else parts[0]
 
-    # Calculate time differences between consecutive frames
-    time_deltas = [
-        (datetimes[i + 1] - datetimes[i]).total_seconds()
-        for i in range(len(datetimes) - 1)
-    ]
+        # Parse the time string using a format that includes fractional seconds
+        dt = datetime.strptime(time_str, "%H:%M:%S.%f")
+
+        # Convert the time to seconds since midnight
+        seconds_since_midnight = dt.hour * 3600 + dt.minute * 60 + dt.second + dt.microsecond / 1e6
+        times.append(seconds_since_midnight)
+
+    # Calculate differences between consecutive timestamps.
+    time_deltas = []
+    for i in range(len(times) - 1):
+        delta = times[i + 1] - times[i]
+        # Handle potential wrap-around at midnight:
+        if delta < 0:
+            delta += 24 * 3600  # Number of seconds in 24 hours.
+        time_deltas.append(delta)
 
     # Calculate average time difference
     avg_time_delta = sum(time_deltas) / len(time_deltas)
