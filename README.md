@@ -41,10 +41,6 @@ For each input video, the script generates:
 This workflow uses [FLIRPy](https://github.com/LJMUAstroecology/flirpy) for FLIR SEQ file extraction. Please consult the FLIRPy repository for its citation and licensing information.
 
 ## License
-See the repository license for terms of use.
-
-
-## License
 Please refer to the repository license for terms of use.
 
 ## Citation
